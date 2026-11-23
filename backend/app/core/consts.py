@@ -9,3 +9,4 @@ class EnvironmentType(StrEnum):
 
 NOT_CHANGED_PREFIX: str = "change-me"
 SECRET_KEY_MIN_LENGTH: int = 32
+API_KEY_PREFIX: str = "sk_live_"

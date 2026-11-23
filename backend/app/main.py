@@ -4,7 +4,10 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.core import settings, DbSession
+from fastapi import APIRouter, status
+
+from app.core import settings, DbSession, register_exception_handlers
+from app.api.v1 import api_router, auth_router
 
 
 @asynccontextmanager
@@ -30,6 +33,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+register_exception_handlers(app)
+
+api_v1_router = APIRouter(prefix="/api/v1")
+api_v1_router.include_router(auth_router)
+api_v1_router.include_router(api_router)
+
+app.include_router(api_v1_router)
 
 
 @app.get("/api/health", tags=["System"])
