@@ -12,18 +12,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+COPY pyproject.toml uv.lock* ./
+RUN pip install --upgrade pip && pip install uv
+RUN uv sync --frozen --no-install-project || uv sync --no-install-project
 
 # Stage 2: Development (with hot-reload)
 FROM base AS development
-COPY . .
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+COPY ./app ./app
+COPY ./tests ./tests
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # Stage 3: Production (Gunicorn + Uvicorn workers)
 FROM base AS production
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
-COPY . .
+COPY ./app ./app
 RUN chown -R appuser:appgroup /app
 USER appuser
 CMD ["gunicorn", "app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]

@@ -7,6 +7,9 @@ from .exceptions import BadSecretKeyError
 
 
 class Settings(BaseSettings):
+    APP_NAME: str = "ShortLink API"
+    APP_VERSION: str = "1.0.0"
+
     ENVIRONMENT: Literal["development", "testing", "production"] = EnvironmentType.DEV
     DEBUG: bool = False
     BASE_URL: str = "http://localhost:5173"

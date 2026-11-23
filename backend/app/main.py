@@ -1,22 +1,25 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
+from sqlalchemy import text
+
+from app.core import settings, DbSession
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     # Startup: initialize Redis pool / GeoIP reader
     yield
     # Shutdown: close connections
 
 
 app = FastAPI(
-    title="ShortLink SaaS API",
-    version="1.0.0",
-    docs_url="/api/docs" if settings.ENVIRONMENT != "production" else None,
-    redoc_url="/api/redoc" if settings.ENVIRONMENT != "production" else None,
-    openapi_url="/api/openapi.json" if settings.ENVIRONMENT != "production" else None,
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    docs_url="/api/docs" if not settings.is_production else None,
+    redoc_url="/api/redoc" if not settings.is_production else None,
+    openapi_url="/api/openapi.json" if not settings.is_production else None,
     lifespan=lifespan,
 )
 
@@ -30,8 +33,10 @@ app.add_middleware(
 
 
 @app.get("/api/health", tags=["System"])
-async def health_check():
+async def health_check(session: DbSession):
+    status_query = await session.execute(text("Select TRUE"))
     return {
         "status": "ok",
         "environment": settings.ENVIRONMENT,
+        "database_status": status_query.scalar()
     }
