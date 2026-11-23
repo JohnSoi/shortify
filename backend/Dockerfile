@@ -20,6 +20,9 @@ RUN uv sync --frozen --no-install-project || uv sync --no-install-project
 FROM base AS development
 COPY ./app ./app
 COPY ./tests ./tests
+COPY ./alembic ./alembic
+COPY ./alembic.ini ./
+COPY ./.venv ./.venv
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # Stage 3: Production (Gunicorn + Uvicorn workers)

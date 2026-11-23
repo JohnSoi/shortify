@@ -8,4 +8,4 @@ prod:
 	docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 
 migrate:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend alembic upgrade head
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend uv run alembic upgrade head
